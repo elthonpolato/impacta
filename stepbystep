@@ -1,0 +1,55 @@
+sudo apt update
+sudo apt install postgresql postgresql-contrib
+sudo systemctl status postgresql
+sudo -i -u postgres
+psql
+CREATE ROLE u_impacta WITH LOGIN PASSWORD 'P@ssw0rd%01' CREATEDB;
+CREATE DATABASE db_impacta OWNER u_impacta;
+ \c db_impacta;
+
+CREATE TABLE usuario (
+    usuario_id SERIAL PRIMARY KEY,
+    nome VARCHAR(150) NOT NULL,
+    email VARCHAR(150) UNIQUE NOT NULL,
+    senha VARCHAR(40) NOT NULL,
+    ativo BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+CREATE TABLE colaboradores (
+    colaborador_id SERIAL PRIMARY KEY,
+    nome VARCHAR(150) NOT NULL,
+    departamento VARCHAR(255),
+    cargo VARCHAR(255),
+    admissao DATE,
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
+    data_criacao TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- Tabela de Motivos de Ausência
+CREATE TABLE motivos_ausencia (
+    motivo_id SERIAL PRIMARY KEY,
+    descricao TEXT NOT NULL,
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
+    data_criacao TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- Tabela de Registro de Ausências
+CREATE TABLE registros_ausencias (
+    registro_id SERIAL PRIMARY KEY,
+    usuario_id INTEGER REFERENCES usuario(usuario_id),
+    colaborador_id INTEGER REFERENCES colaboradores(colaborador_id),
+    motivo_id INTEGER REFERENCES motivos_ausencia(motivo_id),
+    data_inicio TIMESTAMP,
+    data_fim TIMESTAMP,
+    observacoes TEXT,
+    data_criacao TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- Tabela de Registro de Tratativas
+CREATE TABLE registros_tratativas (
+    tratativa_id SERIAL PRIMARY KEY,
+    registro_ausencia_id INTEGER REFERENCES registros_ausencias(registro_id),
+    descricao TEXT,
+    data_tratativa DATE,
+    data_criacao TIMESTAMP NOT NULL DEFAULT NOW()
+);
